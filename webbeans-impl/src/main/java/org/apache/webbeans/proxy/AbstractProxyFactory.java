@@ -61,29 +61,16 @@ public abstract class AbstractProxyFactory
     public static final int MODIFIER_VARARGS = 0x00000080;
 
     /**
-     * This is needed as the Modifier#BRIDGE is not (yet) public. Must be preserved when a proxy
-     * re-declares a JVM bridge method: overload resolution e.g. in Expression Language
-     * implementations relies on {@link Method#isBridge()} to disambiguate overloaded methods.
-     * Note that the bitcode is the same as Modifier#VOLATILE.
-     * But 'bridge' is only for methods, whereas 'volatile' is only for fields.
+     * Modifiers stripped from a method re-declared by a generated proxy; all others - notably
+     * ACC_BRIDGE / ACC_SYNTHETIC, which overload resolution (e.g. jakarta.el MethodExpressions
+     * on proxied beans) relies on to detect re-declared JVM bridge methods via
+     * {@link Method#isBridge()} - are forwarded as-is.
+     * ABSTRACT and NATIVE must not appear on the generated concrete delegation body (interface
+     * and abstract methods reach the generators); SYNCHRONIZED is dropped so the delegation
+     * method does not lock on the proxy instance (the proxied method itself still synchronizes).
      */
-    public static final int MODIFIER_BRIDGE = 0x00000040;
-
-    /**
-     * This is needed as the Modifier#SYNTHETIC is not (yet) public.
-     * JVM bridge methods carry ACC_BRIDGE | ACC_SYNTHETIC, so keep both on re-declared methods.
-     */
-    public static final int MODIFIER_SYNTHETIC = 0x00001000;
-
-    /**
-     * The method modifiers a generated proxy keeps when re-declaring a method of the proxied class;
-     * everything else (e.g. ABSTRACT, SYNCHRONIZED, NATIVE) must not appear on a generated
-     * delegation method. ACC_BRIDGE / ACC_SYNTHETIC are preserved so that overload resolution
-     * (e.g. jakarta.el MethodExpressions on proxied beans) can still detect re-declared JVM bridge
-     * methods via {@link Method#isBridge()}.
-     */
-    public static final int PROXYABLE_METHOD_MODIFIERS =
-            Modifier.PUBLIC | Modifier.PROTECTED | MODIFIER_VARARGS | MODIFIER_BRIDGE | MODIFIER_SYNTHETIC;
+    public static final int STRIPPED_PROXY_METHOD_MODIFIERS =
+            Modifier.ABSTRACT | Modifier.NATIVE | Modifier.SYNCHRONIZED;
 
     protected final Unsafe unsafe;
 

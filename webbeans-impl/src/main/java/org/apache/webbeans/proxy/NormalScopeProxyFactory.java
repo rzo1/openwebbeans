@@ -395,7 +395,7 @@ public class NormalScopeProxyFactory extends AbstractProxyFactory
                 exceptionTypeNames[i] = Type.getType(exceptionTypes[i]).getInternalName();
             }
 
-            int targetModifiers = delegatedMethod.getModifiers() & PROXYABLE_METHOD_MODIFIERS;
+            int targetModifiers = delegatedMethod.getModifiers() & ~STRIPPED_PROXY_METHOD_MODIFIERS;
 
             MethodVisitor mv = cw.visitMethod(targetModifiers, delegatedMethod.getName(), methodDescriptor, null, exceptionTypeNames);
 
@@ -454,7 +454,7 @@ public class NormalScopeProxyFactory extends AbstractProxyFactory
         int modifiers = method.getModifiers();
 
         // push the method definition
-        int modifier = modifiers & PROXYABLE_METHOD_MODIFIERS;
+        int modifier = modifiers & ~STRIPPED_PROXY_METHOD_MODIFIERS;
 
         MethodVisitor mv = cw.visitMethod(modifier, method.getName(), Type.getMethodDescriptor(method), null, null);
         mv.visitCode();
